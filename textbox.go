@@ -69,8 +69,8 @@ func (t *textBox) placeAtXY(x, y int) error {
 	termbox.SetCell(x+t.width-1, y, '+', t.border_color, termbox.ColorDefault)
 	termbox.SetCell(x, y+t.height-1, '+', t.border_color, termbox.ColorDefault)
 	termbox.SetCell(x+t.width-1, y+t.height-1, '+', t.border_color, termbox.ColorDefault)
-	<-dashChan
-	<-pipeChan
-	<-textChan
+	checkDash := <-dashChan
+	checkPipe := <-pipeChan
+	checkText := <-textChan
 	return nil
 }
