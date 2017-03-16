@@ -43,27 +43,33 @@ func (t *textBox) placeAtXY(x, y int) error {
 	} else if y+t.height-1 > h || y < 0 {
 		return errors.New("placeAtXY: Y is invalid")
 	}
-	go func(x, y int) {
+	go func(x, y int, c chan bool) {
 		for i := x + 1; i < x+t.width-2; i++ {
 			termbox.SetCell(i, y, '-', t.border_color, termbox.ColorDefault)
 			termbox.SetCell(i, y+t.height-1, '-', t.border_color, termbox.ColorDefault)
 		}
-	}(x, y)
-	go func(x, y int) {
+		c <- true
+	}(x, y, dashChan)
+	go func(x, y int, c chan bool) {
 		for i := y + 1; i < y+t.height-2; i++ {
 			termbox.SetCell(x, i, '|', t.border_color, termbox.ColorDefault)
 			termbox.SetCell(x+t.width-1, i, '|', t.border_color, termbox.ColorDefault)
 		}
-	}(x, y)
-	go func(x, y int) {
+		c <- true
+	}(x, y, pipeChan)
+	go func(x, y int, c chan bool) {
 		for i := 0; i < t.height-2; i++ {
 			for n := 0; n < t.width-2; n++ {
 				termbox.SetCell(x+n+2, y+i+2, t.text[i][n], t.text_color, termbox.ColorDefault)
 			}
 		}
-	}(x, y)
+		c <- true
+	}(x, y, textChan)
 	termbox.SetCell(x, y, '+', t.border_color, termbox.ColorDefault)
 	termbox.SetCell(x+t.width-1, y, '+', t.border_color, termbox.ColorDefault)
 	termbox.SetCell(x, y+t.height-1, '+', t.border_color, termbox.ColorDefault)
 	termbox.SetCell(x+t.width-1, y+t.height-1, '+', t.border_color, termbox.ColorDefault)
+	<-dashChan
+	<-pipeChan
+	<-textChan
 }
