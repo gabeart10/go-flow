@@ -25,7 +25,7 @@ func newTextBox() *textBox {
 		x:            0,
 		y:            0,
 		shown:        false,
-		text:         make([][1]rune, 1),
+		text:         make([][]rune, 1),
 		border_color: termbox.ColorBlue,
 		text_color:   termbox.ColorDefault,
 	}
@@ -72,4 +72,5 @@ func (t *textBox) placeAtXY(x, y int) error {
 	<-dashChan
 	<-pipeChan
 	<-textChan
+	return nil
 }

@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/nsf/termbox-go"
-	"math"
 )
 
 type screen struct {
@@ -16,7 +15,7 @@ func newScreen() *screen {
 	return &screen{
 		width:  w,
 		height: h,
-		boxes:  make(textBoxes, math.Ceil(w/3*h/3)),
+		boxes:  make(textBoxes, int(w/3*h/3)),
 	}
 }
 
