@@ -33,9 +33,9 @@ func newTextBox() *textBox {
 
 func (t *textBox) placeAtXY(x, y int) error {
 	w, h := termbox.Size()
-	textChan := make(chan bool)
-	dashChan := make(chan bool)
-	pipeChan := make(chan bool)
+	textChan := make(chan bool, 1)
+	dashChan := make(chan bool, 1)
+	pipeChan := make(chan bool, 1)
 	if t.shown == true {
 		return errors.New("placeAtXY: textBox is on screen")
 	} else if x+t.width-1 > w || x < 0 {
@@ -69,8 +69,8 @@ func (t *textBox) placeAtXY(x, y int) error {
 	termbox.SetCell(x+t.width-1, y, '+', t.border_color, termbox.ColorDefault)
 	termbox.SetCell(x, y+t.height-1, '+', t.border_color, termbox.ColorDefault)
 	termbox.SetCell(x+t.width-1, y+t.height-1, '+', t.border_color, termbox.ColorDefault)
-	checkDash := <-dashChan
-	checkPipe := <-pipeChan
-	checkText := <-textChan
+	<-dashChan
+	<-pipeChan
+	<-textChan
 	return nil
 }
