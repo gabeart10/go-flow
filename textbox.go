@@ -18,6 +18,8 @@ type textBox struct {
 
 type textBoxes []*textBox
 
+type cordsFunc func(int, int)
+
 func newTextBox() *textBox {
 	return &textBox{
 		width:        3,
@@ -44,14 +46,14 @@ func (t *textBox) placeAtXY(x, y int) error {
 		return errors.New("placeAtXY: Y is invalid")
 	}
 	go func(x, y int, c chan bool) {
-		for i := x + 1; i < x+t.width-2; i++ {
+		for i := x + 1; i < x+t.width-1; i++ {
 			termbox.SetCell(i, y, '-', t.border_color, termbox.ColorDefault)
 			termbox.SetCell(i, y+t.height-1, '-', t.border_color, termbox.ColorDefault)
 		}
 		c <- true
 	}(x, y, dashChan)
 	go func(x, y int, c chan bool) {
-		for i := y + 1; i < y+t.height-2; i++ {
+		for i := y + 1; i < y+t.height-1; i++ {
 			termbox.SetCell(x, i, '|', t.border_color, termbox.ColorDefault)
 			termbox.SetCell(x+t.width-1, i, '|', t.border_color, termbox.ColorDefault)
 		}
@@ -60,7 +62,7 @@ func (t *textBox) placeAtXY(x, y int) error {
 	go func(x, y int, c chan bool) {
 		for i := 0; i < t.height-2; i++ {
 			for n := 0; n < t.width-2; n++ {
-				termbox.SetCell(x+n+2, y+i+2, t.text[i][n], t.text_color, termbox.ColorDefault)
+				termbox.SetCell(x+n+1, y+i+1, t.text[i][n], t.text_color, termbox.ColorDefault)
 			}
 		}
 		c <- true
@@ -69,8 +71,28 @@ func (t *textBox) placeAtXY(x, y int) error {
 	termbox.SetCell(x+t.width-1, y, '+', t.border_color, termbox.ColorDefault)
 	termbox.SetCell(x, y+t.height-1, '+', t.border_color, termbox.ColorDefault)
 	termbox.SetCell(x+t.width-1, y+t.height-1, '+', t.border_color, termbox.ColorDefault)
+	t.x = x
+	t.y = y
+	t.shown = true
 	<-dashChan
 	<-pipeChan
 	<-textChan
 	return nil
+}
+
+func (t *textBox) findAllCords(function cordsFunc) {
+	for i := t.y; i < t.y+t.height-1; i++ {
+		for n := t.x; n < t.x+t.width-1; n++ {
+			function(n, i)
+		}
+	}
+}
+
+func (t *textBox) hide() {
+	t.findAllCords(func(x, y int) {
+		termbox.SetCell(x, y, ' ', termbox.ColorDefault, termbox.ColorDefault)
+	})
+	t.shown = false
+	t.x = 0
+	t.y = 0
 }

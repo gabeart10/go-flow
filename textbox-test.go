@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/nsf/termbox-go"
 	"os"
+	"time"
 )
 
 func main() {
@@ -18,10 +19,11 @@ func main() {
 	}()
 	textb := newTextBox()
 	textb.text[0] = append(textb.text[0], ' ')
-	err := textb.placeAtXY(7, 10)
-	if err != nil {
-		print(err)
-	}
+	textb.placeAtXY(20, 20)
+	termbox.Flush()
+	time.Sleep(1 * time.Second)
+	textb.hide()
+	termbox.Flush()
 	for {
 	}
 }
