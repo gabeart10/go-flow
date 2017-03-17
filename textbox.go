@@ -5,6 +5,13 @@ import (
 	"github.com/nsf/termbox-go"
 )
 
+const (
+	directionUp    resizeDirection = 0
+	directionDown  resizeDirection = 1
+	directionRight resizeDirection = 2
+	directionLeft  resizeDirection = 3
+)
+
 type textBox struct {
 	width        int
 	height       int
@@ -19,6 +26,8 @@ type textBox struct {
 type textBoxes []*textBox
 
 type cordsFunc func(int, int)
+
+type resizeDirection int
 
 func newTextBox() *textBox {
 	return &textBox{
@@ -95,4 +104,7 @@ func (t *textBox) hide() {
 	t.shown = false
 	t.x = 0
 	t.y = 0
+}
+
+func (t *textBox) resize(direction resizeDirection) {
 }
