@@ -81,8 +81,8 @@ func (t *textBox) placeAtXY(x, y int) error {
 }
 
 func (t *textBox) findAllCords(function cordsFunc) {
-	for i := t.y; i < t.y+t.height-1; i++ {
-		for n := t.x; n < t.x+t.width-1; n++ {
+	for i := t.y; i < t.y+t.height; i++ {
+		for n := t.x; n < t.x+t.width; n++ {
 			function(n, i)
 		}
 	}
