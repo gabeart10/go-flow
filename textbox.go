@@ -6,10 +6,12 @@ import (
 )
 
 const (
-	directionUp resizeDirection = iota
+	directionUp resizeOption = iota
 	directionDown
 	directionRight
 	directionLeft
+	larger
+	smaller
 )
 
 type textBox struct {
@@ -30,10 +32,12 @@ type cords [2]int
 
 type cordsFunc func(int, int)
 
-type resizeDirection int
+type cordsFuncOp func(int, int, int)
+
+type resizeOption int
 
 func newTextBox() *textBox {
-	return &textBox{
+	returnBox := &textBox{
 		width:        3,
 		height:       3,
 		x:            0,
@@ -44,10 +48,13 @@ func newTextBox() *textBox {
 		border_color: termbox.ColorBlue,
 		text_color:   termbox.ColorDefault,
 	}
+	returnBox.text[0] = append(returnBox.text[0], ' ')
+	return returnBox
 }
 
 func (t *textBox) placeAtXY(x, y int) error {
 	w, h := termbox.Size()
+	h--
 	textChan := make(chan bool, 1)
 	dashChan := make(chan bool, 1)
 	pipeChan := make(chan bool, 1)
@@ -99,9 +106,8 @@ func (t *textBox) placeAtXY(x, y int) error {
 
 func (t *textBox) updateCords(done chan bool) {
 	t.allCords = make([]cords, t.width*t.height)
-	t.findAllCords(func(x, y int) {
-		t.allCords = append(t.allCords, [2]int{x, y})
-		println(x + " " + y)
+	t.findAllCordsOp(func(x, y, c int) {
+		t.allCords[c] = [2]int{x, y}
 	})
 	done <- true
 }
@@ -110,6 +116,15 @@ func (t *textBox) findAllCords(function cordsFunc) {
 	for i := t.y; i < t.y+t.height; i++ {
 		for n := t.x; n < t.x+t.width; n++ {
 			function(n, i)
+		}
+	}
+}
+func (t *textBox) findAllCordsOp(function cordsFuncOp) {
+	counter := 0
+	for i := t.y; i < t.y+t.height; i++ {
+		for n := t.x; n < t.x+t.width; n++ {
+			function(n, i, counter)
+			counter++
 		}
 	}
 }
@@ -134,7 +149,14 @@ func (t *textBox) subColliding(currentBox *textBox, found chan bool) {
 
 func (s *screen) checkIfColliding(t *textBox) bool {
 	found := make(chan bool, 1)
+	w, h := termbox.Size()
+	h--
 	sent := 0
+	if t.x+t.width-1 > w || t.x < 0 {
+		return false
+	} else if t.y+t.height-1 > h || t.y < 0 {
+		return false
+	}
 	for _, currentBox := range s.boxes {
 		if t != currentBox && currentBox != nil {
 			go t.subColliding(currentBox, found)
@@ -153,11 +175,12 @@ func (s *screen) checkIfColliding(t *textBox) bool {
 	}
 }
 
-func (t *textBox) resize(direction resizeDirection) error {
+func (t *textBox) resizeUp(largerSmaller resizeOption) error {
 	if t.shown == true {
 		return errors.New("resize: textBox is shown")
 	}
-	if direction == directionUp {
+	if largerSmaller == larger {
+
 	}
 	return nil
 }

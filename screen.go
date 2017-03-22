@@ -12,6 +12,7 @@ type screen struct {
 
 func newScreen() *screen {
 	w, h := termbox.Size()
+	h--
 	return &screen{
 		width:  w,
 		height: h,

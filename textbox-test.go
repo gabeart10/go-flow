@@ -24,7 +24,7 @@ func main() {
 	screena.addTextBox(texta)
 	textb.text[0] = append(textb.text[0], ' ')
 	texta.text[0] = append(textb.text[0], ' ')
-	textb.placeAtXY(15, 6)
+	textb.placeAtXY(15, 11)
 	texta.placeAtXY(15, 10)
 	result := screena.checkIfColliding(textb)
 	termbox.Flush()
