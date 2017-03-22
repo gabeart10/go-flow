@@ -6,10 +6,10 @@ import (
 )
 
 const (
-	directionUp    resizeDirection = 0
-	directionDown  resizeDirection = 1
-	directionRight resizeDirection = 2
-	directionLeft  resizeDirection = 3
+	directionUp resizeDirection = iota
+	directionDown
+	directionRight
+	directionLeft
 )
 
 type textBox struct {
@@ -19,11 +19,14 @@ type textBox struct {
 	y            int
 	shown        bool
 	text         [][]rune
+	allCords     []cords
 	border_color termbox.Attribute
 	text_color   termbox.Attribute
 }
 
 type textBoxes []*textBox
+
+type cords [2]int
 
 type cordsFunc func(int, int)
 
@@ -37,6 +40,7 @@ func newTextBox() *textBox {
 		y:            0,
 		shown:        false,
 		text:         make([][]rune, 1),
+		allCords:     make([]cords, 9),
 		border_color: termbox.ColorBlue,
 		text_color:   termbox.ColorDefault,
 	}
@@ -47,6 +51,7 @@ func (t *textBox) placeAtXY(x, y int) error {
 	textChan := make(chan bool, 1)
 	dashChan := make(chan bool, 1)
 	pipeChan := make(chan bool, 1)
+	cordsChan := make(chan bool, 1)
 	if t.shown == true {
 		return errors.New("placeAtXY: textBox is on screen")
 	} else if x+t.width-1 > w || x < 0 {
@@ -54,6 +59,11 @@ func (t *textBox) placeAtXY(x, y int) error {
 	} else if y+t.height-1 > h || y < 0 {
 		return errors.New("placeAtXY: Y is invalid")
 	}
+	t.x = x
+	t.y = y
+	t.shown = true
+	go t.updateCords(cordsChan)
+
 	go func(x, y int, c chan bool) {
 		for i := x + 1; i < x+t.width-1; i++ {
 			termbox.SetCell(i, y, '-', t.border_color, termbox.ColorDefault)
@@ -80,13 +90,20 @@ func (t *textBox) placeAtXY(x, y int) error {
 	termbox.SetCell(x+t.width-1, y, '+', t.border_color, termbox.ColorDefault)
 	termbox.SetCell(x, y+t.height-1, '+', t.border_color, termbox.ColorDefault)
 	termbox.SetCell(x+t.width-1, y+t.height-1, '+', t.border_color, termbox.ColorDefault)
-	t.x = x
-	t.y = y
-	t.shown = true
 	<-dashChan
 	<-pipeChan
 	<-textChan
+	<-cordsChan
 	return nil
+}
+
+func (t *textBox) updateCords(done chan bool) {
+	t.allCords = make([]cords, t.width*t.height)
+	t.findAllCords(func(x, y int) {
+		t.allCords = append(t.allCords, [2]int{x, y})
+		println(x + " " + y)
+	})
+	done <- true
 }
 
 func (t *textBox) findAllCords(function cordsFunc) {
@@ -102,9 +119,45 @@ func (t *textBox) hide() {
 		termbox.SetCell(x, y, ' ', termbox.ColorDefault, termbox.ColorDefault)
 	})
 	t.shown = false
-	t.x = 0
-	t.y = 0
 }
 
-func (t *textBox) resize(direction resizeDirection) {
+func (t *textBox) subColliding(currentBox *textBox, found chan bool) {
+	for _, currentCord := range t.allCords {
+		for _, compCord := range currentBox.allCords {
+			if currentCord == compCord {
+				found <- true
+			}
+		}
+	}
+	found <- false
+}
+
+func (s *screen) checkIfColliding(t *textBox) bool {
+	found := make(chan bool, 1)
+	sent := 0
+	for _, currentBox := range s.boxes {
+		if t != currentBox && currentBox != nil {
+			go t.subColliding(currentBox, found)
+			sent++
+		}
+	}
+	for {
+		if sent == 0 {
+			return false
+		}
+		isFound := <-found
+		if isFound == true {
+			return true
+		}
+		sent--
+	}
+}
+
+func (t *textBox) resize(direction resizeDirection) error {
+	if t.shown == true {
+		return errors.New("resize: textBox is shown")
+	}
+	if direction == directionUp {
+	}
+	return nil
 }

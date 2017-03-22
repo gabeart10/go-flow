@@ -17,13 +17,23 @@ func main() {
 			}
 		}
 	}()
+	screena := newScreen()
 	textb := newTextBox()
+	texta := newTextBox()
+	screena.addTextBox(textb)
+	screena.addTextBox(texta)
 	textb.text[0] = append(textb.text[0], ' ')
-	textb.placeAtXY(20, 20)
+	texta.text[0] = append(textb.text[0], ' ')
+	textb.placeAtXY(15, 6)
+	texta.placeAtXY(15, 10)
+	result := screena.checkIfColliding(textb)
 	termbox.Flush()
 	time.Sleep(1 * time.Second)
-	textb.hide()
-	termbox.Flush()
+	if result == true {
+		termbox.Close()
+		os.Exit(3)
+	}
+
 	for {
 	}
 }
