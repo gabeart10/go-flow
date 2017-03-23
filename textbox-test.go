@@ -25,6 +25,8 @@ func main() {
 	termbox.Flush()
 	time.Sleep(1 * time.Second)
 	textb.hide()
+	termbox.Flush()
+	time.Sleep(1 * time.Second)
 	textb.resizeUp(larger, screena)
 	termbox.Flush()
 	time.Sleep(1 * time.Second)
