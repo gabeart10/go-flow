@@ -189,7 +189,9 @@ func (t *textBox) resizeUp(largerSmaller resizeOption, s *screen) error {
 		}
 		newText := make([][]rune, t.height-2)
 		for i := 0; i < t.height-3; i++ {
+			println("made it")
 			for n := 0; n < t.width-2; n++ {
+				println("made to append")
 				newText[i] = append(newText[i], t.text[i][n])
 			}
 		}
