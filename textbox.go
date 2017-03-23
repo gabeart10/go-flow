@@ -175,12 +175,28 @@ func (s *screen) checkIfColliding(t *textBox) bool {
 	}
 }
 
-func (t *textBox) resizeUp(largerSmaller resizeOption) error {
+func (t *textBox) resizeUp(largerSmaller resizeOption, s *screen) error {
 	if t.shown == true {
 		return errors.New("resize: textBox is shown")
 	}
 	if largerSmaller == larger {
-
+		t.y--
+		t.height++
+		if s.checkIfColliding(t) == true {
+			t.y++
+			t.height--
+			return errors.New("resize: Object in way")
+		}
+		newText := make([][]rune, t.height-2)
+		for i := 0; i < t.height-3; i++ {
+			for n := 0; n < t.width-2; n++ {
+				newText[i] = append(newText[i], t.text[i][n])
+			}
+		}
+		for i := 0; i < t.width-2; i++ {
+			newText[t.height-2] = append(newText[t.height-2], ' ')
+		}
+		t.text = newText
 	}
 	return nil
 }
