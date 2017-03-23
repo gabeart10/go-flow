@@ -24,12 +24,10 @@ func main() {
 	textb.placeAtXY(15, 11)
 	termbox.Flush()
 	time.Sleep(1 * time.Second)
-	textb.hide()
-	termbox.Flush()
-	time.Sleep(1 * time.Second)
-	textb.resizeUp(larger, screena)
-	termbox.Flush()
-	time.Sleep(1 * time.Second)
+	for i := 0; i < 10; i++ {
+		textb.resizeUp(larger, screena)
+		termbox.Flush()
+	}
 	for {
 	}
 }

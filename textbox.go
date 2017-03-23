@@ -176,9 +176,10 @@ func (s *screen) checkIfColliding(t *textBox) bool {
 }
 
 func (t *textBox) resizeUp(largerSmaller resizeOption, s *screen) error {
-	if t.shown == true {
-		return errors.New("resize: textBox is shown")
+	if t.shown == false {
+		return errors.New("resize: textBox is not shown")
 	}
+	t.hide()
 	if largerSmaller == larger {
 		t.y--
 		t.height++
@@ -189,16 +190,15 @@ func (t *textBox) resizeUp(largerSmaller resizeOption, s *screen) error {
 		}
 		newText := make([][]rune, t.height-2)
 		for i := 0; i < t.height-3; i++ {
-			println("made it")
 			for n := 0; n < t.width-2; n++ {
-				println("made to append")
 				newText[i] = append(newText[i], t.text[i][n])
 			}
 		}
 		for i := 0; i < t.width-2; i++ {
-			newText[t.height-2] = append(newText[t.height-2], ' ')
+			newText[t.height-3] = append(newText[t.height-3], ' ')
 		}
 		t.text = newText
 	}
+	t.placeAtXY(t.x, t.y)
 	return nil
 }
