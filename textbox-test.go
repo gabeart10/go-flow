@@ -28,6 +28,11 @@ func main() {
 		textb.resizeUp(larger, screena)
 		termbox.Flush()
 	}
+	time.Sleep(1 * time.Second)
+	for i := 0; i < 10; i++ {
+		textb.resizeUp(smaller, screena)
+		termbox.Flush()
+	}
 	for {
 	}
 }

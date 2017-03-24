@@ -26,6 +26,11 @@ type textBox struct {
 	text_color   termbox.Attribute
 }
 
+var borderBox = &textBox{
+	width:  0,
+	height: 0,
+}
+
 type textBoxes []*textBox
 
 type cords [2]int
@@ -136,7 +141,7 @@ func (t *textBox) hide() {
 	t.shown = false
 }
 
-func (t *textBox) subColliding(currentBox *textBox, found chan bool) {
+func (t *textBox) subColliding(currentBox *textBox, found chan *textBox) {
 	for _, currentCord := range t.allCords {
 		for _, compCord := range currentBox.allCords {
 			if currentCord == compCord {
@@ -153,9 +158,9 @@ func (s *screen) checkIfColliding(t *textBox) *textBox {
 	h--
 	sent := 0
 	if t.x+t.width-1 > w || t.x < 0 {
-		return false
+		return borderBox
 	} else if t.y+t.height-1 > h || t.y < 0 {
-		return false
+		return borderBox
 	}
 	for _, currentBox := range s.boxes {
 		if t != currentBox && currentBox != nil {
@@ -183,7 +188,7 @@ func (t *textBox) resizeUp(largerSmaller resizeOption, s *screen) error {
 	if largerSmaller == larger {
 		t.y--
 		t.height++
-		if s.checkIfColliding(t) == true {
+		if s.checkIfColliding(t) != nil {
 			t.y++
 			t.height--
 			return errors.New("resize: Object in way")
@@ -199,8 +204,21 @@ func (t *textBox) resizeUp(largerSmaller resizeOption, s *screen) error {
 		}
 		t.text = newText
 	} else if largerSmaller == smaller {
-		if t.height == 3 {
+		if t.height <= 3 {
 			return errors.New("resize: Textbox too small")
+		}
+		for _, symbol := range t.text[t.height-3] {
+			if symbol != ' ' {
+				return errors.New("resize: Text in way")
+			}
+		}
+		t.height--
+		t.y++
+		newText := make([][]rune, t.height-2)
+		for i := 0; i < t.height-2; i++ {
+			for n := 0; n < t.width-2; n++ {
+				newText[i] = append(newText[i], t.text[i][n])
+			}
 		}
 	}
 	t.placeAtXY(t.x, t.y)
