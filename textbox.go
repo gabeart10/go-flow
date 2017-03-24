@@ -140,15 +140,15 @@ func (t *textBox) subColliding(currentBox *textBox, found chan bool) {
 	for _, currentCord := range t.allCords {
 		for _, compCord := range currentBox.allCords {
 			if currentCord == compCord {
-				found <- true
+				found <- currentBox
 			}
 		}
 	}
-	found <- false
+	found <- nil
 }
 
-func (s *screen) checkIfColliding(t *textBox) bool {
-	found := make(chan bool, 1)
+func (s *screen) checkIfColliding(t *textBox) *textBox {
+	found := make(chan *textBox, 1)
 	w, h := termbox.Size()
 	h--
 	sent := 0
@@ -165,11 +165,11 @@ func (s *screen) checkIfColliding(t *textBox) bool {
 	}
 	for {
 		if sent == 0 {
-			return false
+			return nil
 		}
 		isFound := <-found
-		if isFound == true {
-			return true
+		if isFound != nil {
+			return isFound
 		}
 		sent--
 	}
@@ -198,6 +198,10 @@ func (t *textBox) resizeUp(largerSmaller resizeOption, s *screen) error {
 			newText[t.height-3] = append(newText[t.height-3], ' ')
 		}
 		t.text = newText
+	} else if largerSmaller == smaller {
+		if t.height == 3 {
+			return errors.New("resize: Textbox too small")
+		}
 	}
 	t.placeAtXY(t.x, t.y)
 	return nil
