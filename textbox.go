@@ -180,16 +180,20 @@ func (s *screen) checkIfColliding(t *textBox) *textBox {
 	}
 }
 
-func (t *textBox) resizeUp(largerSmaller resizeOption, s *screen) error {
+func (t *textBox) resizeUpDown(largerSmaller resizeOption,upDown resizeOption, s *screen) error {
 	if t.shown == false {
 		return errors.New("resize: textBox is not shown")
 	}
 	t.hide()
 	if largerSmaller == larger {
-		t.y--
+		if upDown == directionUp {
+			t.y--
+		}
 		t.height++
 		if s.checkIfColliding(t) != nil {
-			t.y++
+			if upDown == directionUp {
+				t.y++
+			}
 			t.height--
 			return errors.New("resize: Object in way")
 		}
@@ -213,7 +217,9 @@ func (t *textBox) resizeUp(largerSmaller resizeOption, s *screen) error {
 			}
 		}
 		t.height--
-		t.y++
+		if upDown == directionUp {
+			t.y++
+		}
 		newText := make([][]rune, t.height-2)
 		for i := 0; i < t.height-2; i++ {
 			for n := 0; n < t.width-2; n++ {
@@ -224,3 +230,9 @@ func (t *textBox) resizeUp(largerSmaller resizeOption, s *screen) error {
 	t.placeAtXY(t.x, t.y)
 	return nil
 }
+
+func (t *textBox) resizeRight(largerSmaller resizeOption, s *screen) error {
+	if t.shown == false {
+		return errors.New("resize: Textbox is not shown")
+	}
+	t.hide()
