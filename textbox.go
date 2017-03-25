@@ -180,7 +180,7 @@ func (s *screen) checkIfColliding(t *textBox) *textBox {
 	}
 }
 
-func (t *textBox) resizeUpDown(largerSmaller resizeOption,upDown resizeOption, s *screen) error {
+func (t *textBox) resizeUpDown(largerSmaller resizeOption, upDown resizeOption, s *screen) error {
 	if t.shown == false {
 		return errors.New("resize: textBox is not shown")
 	}
@@ -236,3 +236,4 @@ func (t *textBox) resizeRight(largerSmaller resizeOption, s *screen) error {
 		return errors.New("resize: Textbox is not shown")
 	}
 	t.hide()
+}
