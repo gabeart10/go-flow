@@ -22,15 +22,16 @@ func main() {
 	screena.addTextBox(textb)
 	textb.text[0] = append(textb.text[0], ' ')
 	textb.placeAtXY(15, 11)
+	textb.text[0][0] = 'a'
 	termbox.Flush()
 	time.Sleep(1 * time.Second)
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 3; i++ {
 		textb.resizeUpDown(larger, directionDown, screena)
 		termbox.Flush()
 	}
 	time.Sleep(1 * time.Second)
-	for i := 0; i < 10; i++ {
-		textb.resizeUpDown(smaller, directionDown, screena)
+	for i := 0; i < 3; i++ {
+		textb.resizeRightLeft(larger, directionLeft, screena)
 		termbox.Flush()
 	}
 	for {

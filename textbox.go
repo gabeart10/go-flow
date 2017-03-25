@@ -208,7 +208,7 @@ func (t *textBox) resizeUpDown(largerSmaller resizeOption, upDown resizeOption, 
 			}
 		}
 		for i := 0; i < t.width-2; i++ {
-			newText[t.height-3] = append(newText[t.height-3], ' ')
+			newText[t.height-3] = append(newText[t.height-3], 0x0)
 		}
 		t.text = newText
 	} else if largerSmaller == smaller {
@@ -216,7 +216,7 @@ func (t *textBox) resizeUpDown(largerSmaller resizeOption, upDown resizeOption, 
 			return errors.New("resize: Textbox too small")
 		}
 		for _, symbol := range t.text[t.height-3] {
-			if symbol != ' ' {
+			if symbol != 0x0 {
 				return errors.New("resize: Text in way")
 			}
 		}
@@ -230,6 +230,7 @@ func (t *textBox) resizeUpDown(largerSmaller resizeOption, upDown resizeOption, 
 				newText[i] = append(newText[i], t.text[i][n])
 			}
 		}
+		t.text = newText
 	}
 	t.placeAtXY(t.x, t.y)
 	return nil
@@ -241,5 +242,41 @@ func (t *textBox) resizeRightLeft(largerSmaller resizeOption, leftRight resizeOp
 	}
 	t.hide()
 	if largerSmaller == larger {
+		t.width++
+		if leftRight == directionLeft {
+			t.x--
+		}
+		if s.checkIfColliding(t) != nil {
+			t.width--
+			if leftRight == directionLeft {
+				t.x++
+			}
+			errors.New("resize: Object in way")
+		}
+		newText := make([][]rune, t.height-2)
+		x := 0
+		y := 0
+		for i := 0; i < t.height-2; i++ {
+			for n := 0; n < t.width-3; n++ {
+				if x < t.width-2 {
+					newText[y] = append(newText[y], t.text[i][n])
+					x++
+				} else {
+					x = 0
+					y++
+				}
+			}
+		}
+		for i := x; i < t.width-2; i++ {
+			newText[y] = append(newText[y], 0x0)
+		}
+		for i := y; i < t.height-2; i++ {
+			for n := 0; n < t.width-2; n++ {
+				newText[i] = append(newText[i], 0x0)
+			}
+		}
+		t.text = newText
 	}
+	t.placeAtXY(t.x, t.y)
+	return nil
 }
