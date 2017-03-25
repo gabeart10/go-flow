@@ -53,7 +53,7 @@ func newTextBox() *textBox {
 		border_color: termbox.ColorBlue,
 		text_color:   termbox.ColorDefault,
 	}
-	returnBox.text[0] = append(returnBox.text[0], ' ')
+	returnBox.text[0] = append(returnBox.text[0], 0x0)
 	return returnBox
 }
 
@@ -93,7 +93,11 @@ func (t *textBox) placeAtXY(x, y int) error {
 	go func(x, y int, c chan bool) {
 		for i := 0; i < t.height-2; i++ {
 			for n := 0; n < t.width-2; n++ {
-				termbox.SetCell(x+n+1, y+i+1, t.text[i][n], t.text_color, termbox.ColorDefault)
+				if t.text[i][n] == 0x0 {
+					termbox.SetCell(x+n+1, y+i+1, ' ', t.text_color, termbox.ColorDefault)
+				} else {
+					termbox.SetCell(x+n+1, y+i+1, t.text[i][n], t.text_color, termbox.ColorDefault)
+				}
 			}
 		}
 		c <- true
@@ -231,9 +235,11 @@ func (t *textBox) resizeUpDown(largerSmaller resizeOption, upDown resizeOption, 
 	return nil
 }
 
-func (t *textBox) resizeRight(largerSmaller resizeOption, s *screen) error {
+func (t *textBox) resizeRightLeft(largerSmaller resizeOption, leftRight resizeOption, s *screen) error {
 	if t.shown == false {
 		return errors.New("resize: Textbox is not shown")
 	}
 	t.hide()
+	if largerSmaller == larger {
+	}
 }

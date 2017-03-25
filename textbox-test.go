@@ -25,12 +25,12 @@ func main() {
 	termbox.Flush()
 	time.Sleep(1 * time.Second)
 	for i := 0; i < 10; i++ {
-		textb.resizeDown(larger, screena)
+		textb.resizeUpDown(larger, directionDown, screena)
 		termbox.Flush()
 	}
 	time.Sleep(1 * time.Second)
 	for i := 0; i < 10; i++ {
-		textb.resizeDown(smaller, screena)
+		textb.resizeUpDown(smaller, directionDown, screena)
 		termbox.Flush()
 	}
 	for {
