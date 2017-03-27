@@ -31,7 +31,12 @@ func main() {
 	}
 	time.Sleep(1 * time.Second)
 	for i := 0; i < 3; i++ {
-		textb.resizeRightLeft(larger, directionLeft, screena)
+		textb.resizeRightLeft(larger, directionRight, screena)
+		termbox.Flush()
+	}
+	time.Sleep(1 * time.Second)
+	for i := 0; i < 3; i++ {
+		textb.resizeRightLeft(smaller, directionRight, screena)
 		termbox.Flush()
 	}
 	for {

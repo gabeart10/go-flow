@@ -39,7 +39,7 @@ type cordsFunc func(int, int)
 
 type cordsFuncOp func(int, int, int)
 
-type resizeOption int
+type resizeOption uint8
 
 func newTextBox() *textBox {
 	returnBox := &textBox{
@@ -57,9 +57,9 @@ func newTextBox() *textBox {
 	return returnBox
 }
 
-func (t *textBox) placeAtXY(x, y int) error {
-	w, h := termbox.Size()
-	h--
+func (t *textBox) placeAtXY(x, y int, s *screen) error {
+	w := s.width
+	h := s.height
 	textChan := make(chan bool, 1)
 	dashChan := make(chan bool, 1)
 	pipeChan := make(chan bool, 1)
@@ -158,8 +158,8 @@ func (t *textBox) subColliding(currentBox *textBox, found chan *textBox) {
 
 func (s *screen) checkIfColliding(t *textBox) *textBox {
 	found := make(chan *textBox, 1)
-	w, h := termbox.Size()
-	h--
+	w := s.width
+	h := s.height
 	sent := 0
 	if t.x+t.width-1 > w || t.x < 0 {
 		return borderBox
@@ -276,7 +276,44 @@ func (t *textBox) resizeRightLeft(largerSmaller resizeOption, leftRight resizeOp
 			}
 		}
 		t.text = newText
+	} else if largerSmaller == smaller {
+		t.width--
+		if leftRight == directionLeft {
+			t.x++
+		}
+		nil_text := 0
+		for i := 0; i < t.height-2; i++ {
+			for n := 0; n < t.width-1; n++ {
+				if t.text[i][n] == 0x0 {
+					nil_text++
+				}
+			}
+		}
+		if nil_text < t.height-2 {
+			t.width++
+			if leftRight == directionLeft {
+				t.x--
+			}
+			return errors.New("resize: Not enough nil text")
+		}
+		x := 0
+		y := 0
+		newText := make([][]rune, t.height-2)
+		for i := 0; i < t.height-2; i++ {
+			for n := 0; n < t.width-2; n++ {
+				if x < t.width-1 {
+					newText[i] = append(newText[i], t.text[y][x])
+					x++
+				} else {
+					x = 0
+					y++
+					newText[i] = append(newText[i], t.text[y][x])
+				}
+			}
+		}
+		t.text = newText
 	}
+
 	t.placeAtXY(t.x, t.y)
 	return nil
 }
