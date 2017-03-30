@@ -161,9 +161,9 @@ func (s *screen) checkIfColliding(t *textBox) *textBox {
 	w := s.width
 	h := s.height
 	sent := 0
-	if t.x+t.width-1 > w || t.x < 0 {
+	if t.x+t.width-1 > w-1 || t.x < 0 {
 		return borderBox
-	} else if t.y+t.height-1 > h || t.y < 0 {
+	} else if t.y+t.height-1 > h-1 || t.y < 0 {
 		return borderBox
 	}
 	for _, currentBox := range s.boxes {
@@ -232,7 +232,7 @@ func (t *textBox) resizeUpDown(largerSmaller resizeOption, upDown resizeOption, 
 		}
 		t.text = newText
 	}
-	t.placeAtXY(t.x, t.y)
+	t.placeAtXY(t.x, t.y, s)
 	return nil
 }
 
@@ -314,6 +314,6 @@ func (t *textBox) resizeRightLeft(largerSmaller resizeOption, leftRight resizeOp
 		t.text = newText
 	}
 
-	t.placeAtXY(t.x, t.y)
+	t.placeAtXY(t.x, t.y, s)
 	return nil
 }
