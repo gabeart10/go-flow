@@ -35,10 +35,9 @@ func placeCursorAtXY(x, y int, s *screen) error {
 		cursor.y = prevY
 		return errors.New("placeCursorAtXY: XY is in a border")
 	}
-	if cursor.shown == false {
-		termbox.SetCell(prevX, prevY, buffer[(prevY*w)+prevX].Ch, buffer[(prevY*w)+prevX].Fg, termbox.ColorDefault)
-	}
+	termbox.SetCell(prevX, prevY, buffer[(prevY*w)+prevX].Ch, buffer[(prevY*w)+prevX].Fg, termbox.ColorDefault)
 	termbox.SetCell(x, y, buffer[(y*w)+x].Ch, buffer[(y*w)+x].Fg, cursorColor)
+	cursor.shown = true
 	return nil
 }
 
@@ -49,5 +48,15 @@ func hideCursor(s *screen) error {
 	}
 	buffer := termbox.CellBuffer()
 	termbox.SetCell(cursor.x, cursor.y, buffer[(cursor.y*w)+cursor.x].Ch, buffer[(cursor.y*w)+cursor.x].Fg, termbox.ColorDefault)
+	cursor.shown = false
+	return nil
+}
+
+func addTextToTextBox(t *textBox, s *screen, letter rune) error {
+	if cursor.y == t.y || cursor.y == t.y+t.height-1 || cursor.x == t.x || cursor.x == t.x+t.width-1 {
+		return errors.New("addTextToTextBox: Invalid location of cursor")
+	}
+	//cursorTextX := cursor.x - t.x - 1
+	//cursorTextY := cursor.y - t.y - 1
 	return nil
 }

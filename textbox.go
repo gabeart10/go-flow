@@ -57,25 +57,31 @@ func newTextBox() *textBox {
 	return returnBox
 }
 
-func (t *textBox) placeAtXY(x, y int, s *screen) error {
-	w := s.width
-	h := s.height
+func (t *textBox) placeAtXY(x, y int, s *screen, replace bool) error {
 	textChan := make(chan bool, 1)
 	dashChan := make(chan bool, 1)
 	pipeChan := make(chan bool, 1)
-	cordsChan := make(chan bool, 1)
+	prevX := t.x
+	prevY := t.y
+	prevCords := t.allCords
 	if t.shown == true {
+		t.placeAtXY(t.x, t.y, s, true)
 		return errors.New("placeAtXY: textBox is on screen")
-	} else if x+t.width-1 > w || x < 0 {
-		return errors.New("placeAtXY: X is invalid")
-	} else if y+t.height-1 > h || y < 0 {
-		return errors.New("placeAtXY: Y is invalid")
 	}
 	t.x = x
 	t.y = y
 	t.shown = true
-	go t.updateCords(cordsChan)
-
+	t.updateCords()
+	if s.checkIfColliding(t) != nil {
+		t.x = prevX
+		t.y = prevY
+		t.allCords = prevCords
+		t.shown = false
+		if replace == true {
+			t.placeAtXY(t.x, t.y, s, true)
+		}
+		return errors.New("placeAtXY: TextBox in way")
+	}
 	go func(x, y int, c chan bool) {
 		for i := x + 1; i < x+t.width-1; i++ {
 			termbox.SetCell(i, y, '-', t.border_color, termbox.ColorDefault)
@@ -109,16 +115,14 @@ func (t *textBox) placeAtXY(x, y int, s *screen) error {
 	<-dashChan
 	<-pipeChan
 	<-textChan
-	<-cordsChan
 	return nil
 }
 
-func (t *textBox) updateCords(done chan bool) {
+func (t *textBox) updateCords() {
 	t.allCords = make([]cords, t.width*t.height)
 	t.findAllCordsOp(func(x, y, c int) {
 		t.allCords[c] = [2]int{x, y}
 	})
-	done <- true
 }
 
 func (t *textBox) findAllCords(function cordsFunc) {
@@ -194,11 +198,15 @@ func (t *textBox) resizeUpDown(largerSmaller resizeOption, upDown resizeOption, 
 			t.y--
 		}
 		t.height++
+		prevCords := t.allCords
+		t.updateCords()
 		if s.checkIfColliding(t) != nil {
 			if upDown == directionUp {
 				t.y++
 			}
 			t.height--
+			t.allCords = prevCords
+			t.placeAtXY(t.x, t.y, s, true)
 			return errors.New("resize: Object in way")
 		}
 		newText := make([][]rune, t.height-2)
@@ -213,10 +221,12 @@ func (t *textBox) resizeUpDown(largerSmaller resizeOption, upDown resizeOption, 
 		t.text = newText
 	} else if largerSmaller == smaller {
 		if t.height <= 3 {
+			t.placeAtXY(t.x, t.y, s, true)
 			return errors.New("resize: Textbox too small")
 		}
 		for _, symbol := range t.text[t.height-3] {
 			if symbol != 0x0 {
+				t.placeAtXY(t.x, t.y, s, true)
 				return errors.New("resize: Text in way")
 			}
 		}
@@ -232,7 +242,7 @@ func (t *textBox) resizeUpDown(largerSmaller resizeOption, upDown resizeOption, 
 		}
 		t.text = newText
 	}
-	t.placeAtXY(t.x, t.y, s)
+	t.placeAtXY(t.x, t.y, s, true)
 	return nil
 }
 
@@ -246,12 +256,16 @@ func (t *textBox) resizeRightLeft(largerSmaller resizeOption, leftRight resizeOp
 		if leftRight == directionLeft {
 			t.x--
 		}
+		prevCords := t.allCords
+		t.updateCords()
 		if s.checkIfColliding(t) != nil {
 			t.width--
 			if leftRight == directionLeft {
 				t.x++
 			}
-			errors.New("resize: Object in way")
+			t.allCords = prevCords
+			t.placeAtXY(t.x, t.y, s, true)
+			return errors.New("resize: Object in way")
 		}
 		newText := make([][]rune, t.height-2)
 		x := 0
@@ -289,11 +303,12 @@ func (t *textBox) resizeRightLeft(largerSmaller resizeOption, leftRight resizeOp
 				}
 			}
 		}
-		if nil_text < t.height-2 {
+		if nil_text < t.height-2 || t.width < 3 {
 			t.width++
 			if leftRight == directionLeft {
 				t.x--
 			}
+			t.placeAtXY(t.x, t.y, s, true)
 			return errors.New("resize: Not enough nil text")
 		}
 		x := 0
@@ -314,6 +329,6 @@ func (t *textBox) resizeRightLeft(largerSmaller resizeOption, leftRight resizeOp
 		t.text = newText
 	}
 
-	t.placeAtXY(t.x, t.y, s)
+	t.placeAtXY(t.x, t.y, s, true)
 	return nil
 }
